@@ -36,6 +36,9 @@ public class EmployeeServiceTest {
 	@InjectMocks
 	EmployeeService empService = new EmployeeService();
 
+	@Mock
+	private RestTemplate restTemplate;
+
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
@@ -51,7 +54,7 @@ public class EmployeeServiceTest {
 		entity.setId(Long.valueOf("1"));
 		entity.setDeptId(Long.valueOf("1"));
 		entity.setName("Amit");
-		
+
 		Optional<Employee> optEmp = Optional.of(entity);
 
 		when(employeeRepository.findById(any())).thenReturn(optEmp);
@@ -79,7 +82,7 @@ public class EmployeeServiceTest {
 		entity.setId(Long.valueOf("1"));
 		entity.setDeptId(Long.valueOf("1"));
 		entity.setName("Amit");
-		
+
 		Optional<Employee> optOrg = Optional.of(entity);
 
 		when(employeeRepository.findById(any())).thenReturn(optOrg);
@@ -106,10 +109,9 @@ public class EmployeeServiceTest {
 
 		empService.deleteEmployeeById(1L);
 	}
-	
+
 	@Test
 	public void testGetDetailResponse() {
-		RestTemplate restTemplate = new RestTemplate();
 		Employee entity = new Employee();
 		entity.setId(Long.valueOf("1"));
 		entity.setDeptId(Long.valueOf("1"));
@@ -118,18 +120,16 @@ public class EmployeeServiceTest {
 		Optional<Employee> optOrg = Optional.of(entity);
 
 		when(employeeRepository.findById(any())).thenReturn(optOrg);
-		
-		DeptRespModel deptResp = restTemplate
-				.getForObject("http://localhost:8082/department/api/" + 1, DeptRespModel.class);
-		assertNotNull(deptResp);
 
-		OrgRespModel orgResp = restTemplate
-				.getForObject("http://localhost:8083/organization/api/" + 1, OrgRespModel.class);
-		assertNotNull(orgResp);
-		
+		when(restTemplate.getForObject("http://localhost:8082/department/api/1", DeptRespModel.class))
+				.thenReturn(new DeptRespModel());
+
+		when(restTemplate.getForObject("http://localhost:8083/organization/api/1", OrgRespModel.class))
+				.thenReturn(new OrgRespModel());
+
 		DetailRespModel detail = empService.getDetailResponse(1L);
 		assertThat(detail);
-	
+
 	}
 
 	private EmployeeModel populateDummyModel() {
